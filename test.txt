@@ -1,0 +1,4 @@
+Bonjour Bally
+Tu apprends Python
+C'est bien !
+Ligne ajoutée !

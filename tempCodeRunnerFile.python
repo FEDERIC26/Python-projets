@@ -1,0 +1,25 @@
+# FICHIERS - Lire et écrire
+
+# ÉCRIRE dans un fichier
+with open("test.txt", "w") as f:
+    f.write("Bonjour Bally\n")
+    f.write("Tu apprends Python\n")
+    f.write("C'est bien !\n")
+
+print("Fichier créé ✓")
+
+# LIRE un fichier
+with open("test.txt", "r") as f:
+    contenu = f.read()
+    print(contenu)
+
+# LIRE ligne par ligne
+with open("test.txt", "r") as f:
+    for ligne in f:
+        print(ligne.strip())
+
+# AJOUTER sans effacer (mode "a")
+with open("test.txt", "a") as f:
+    f.write("Ligne ajoutée !\n")
+
+print("Ligne ajoutée ✓")
