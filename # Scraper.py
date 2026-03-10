@@ -4,36 +4,42 @@ import requests
 from bs4 import BeautifulSoup
 import csv
 
-url_base = "https://books.toscrape.com/catalogue/page-{}.html"
-tous_les_livres = []
-page = 1
+class Scraper:
+    def __init__(self, url_base):
+        self.url_base = url_base
+        self.livres = []
 
-print("Scraping en cours...")
+    def scraper_page(self, page):
+        try:
+            url = self.url_base.format(page)
+            response = requests.get(url)
+            if response.status_code != 200:
+                return False
+            soup = BeautifulSoup(response.text, "html.parser")
+            for livre in soup.find_all("article", class_="product_pod"):
+                titre = livre.h3.a["title"]
+                prix = livre.find("p", class_="price_color").text.strip()
+                self.livres.append([titre, prix])
+            return True
+        except Exception as e:
+            print(f"Erreur page {page} : {e}")
+            return False
 
-while True:
-    url = url_base.format(page)
-    response = requests.get(url)
-    
-    # Si la page n'existe pas, on arrête
-    if response.status_code != 200:
-        break
-    
-    soup = BeautifulSoup(response.text, "html.parser")
-    livres = soup.find_all("article", class_="product_pod")
-    
-    for livre in livres:
-        titre = livre.h3.a["title"]
-        prix = livre.find("p", class_="price_color").text.strip()
-        dispo = livre.find("p", class_="instock availability").text.strip()
-        tous_les_livres.append([titre, prix, dispo])
-    
-    print(f"Page {page} ✓ ({len(livres)} livres)")
-    page += 1
+    def sauvegarder(self):
+        with open("livres.csv", "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow(["Titre", "Prix"])
+            writer.writerows(self.livres)
+        print(f"{len(self.livres)} livres sauvegardés ✓")
 
-# Sauvegarder en CSV
-with open("livres.csv", "w", newline="", encoding="utf-8") as f:
-    writer = csv.writer(f)
-    writer.writerow(["Titre", "Prix", "Disponibilité"])
-    writer.writerows(tous_les_livres)
+    def lancer(self):
+        page = 1
+        print("Scraping en cours...")
+        while self.scraper_page(page):
+            print(f"Page {page} ✓")
+            page += 1
+        self.sauvegarder()
 
-print(f"\nTerminé ! {len(tous_les_livres)} livres sauvegardés dans livres.csv")
+# Lancer le scraper
+scraper = Scraper("https://books.toscrape.com/catalogue/page-{}.html")
+scraper.lancer()
